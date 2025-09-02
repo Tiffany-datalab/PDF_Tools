@@ -1,0 +1,29 @@
+# Node
+node_modules/
+out/
+dist/
+
+# VS Code settings
+.vscode/
+poppler/
+tesseract/
+
+# Rust
+src-tauri/target/
+
+# Logs
+*.log
+*.svg
+*.png
+package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python OCR 打包
+ocr_engine/build/
+ocr_engine/dist/
+ocr_engine/*.spec
+__pycache__/
+*.pyc
