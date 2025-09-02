@@ -12,10 +12,8 @@ import log from 'electron-log';
 // 設定 electron-log
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
-
-// 額外：讓 log 同時輸出到 console
-log.transports.console.level = 'info';
-
+// ⚠️ 禁止輸出到 console，只寫入 main.log
+log.transports.console.level = false;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,19 +24,21 @@ let mainWindow = null;
    啟動 Flask 後端
 ====================== */
 function startFlask() {
-  const script = path.join(__dirname, '../backend/app.py');
-  const py = spawn('python', [script]);
+  const script = path.join(process.resourcesPath, 'app', 'backend', 'app.py');
+  const pyExe = process.platform === "win32" ? "py" : "python3";
+  const py = spawn(pyExe, [script]);
+  log.info("🚀 Flask script path:", script);
 
   py.stdout.on('data', (data) => {
-    console.log(`[Flask] ${data}`);
+    log.info(`[Flask] ${data}`);
   });
 
   py.stderr.on('data', (data) => {
-    console.error(`[Flask Error] ${data}`);
+    log.error(`[Flask Error] ${data}`);
   });
 
   py.on('close', (code) => {
-    console.log(`[Flask] process exited with code ${code}`);
+    log.info(`[Flask] process exited with code ${code}`);
   });
 }
 
@@ -46,7 +46,7 @@ function startFlask() {
    建立主視窗
 ====================== */
 function createWindow() {
-  console.log("🪟 createWindow: 開始建立瀏覽器視窗");
+  log.info("🪟 createWindow: 開始建立瀏覽器視窗");
 
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -59,7 +59,7 @@ function createWindow() {
     }
   });
 
-  console.log("⚡ 預期載入的 preload 路徑:", path.join(__dirname, 'preload.js'));
+  log.info("⚡ 預期載入的 preload 路徑:", path.join(__dirname, 'preload.js'));
 
   if (!app.isPackaged) {
     mainWindow.loadURL('http://localhost:1420');
@@ -82,7 +82,6 @@ function createWindow() {
         {
           label: '報告改名',
           click: () => {
-            console.log("📨 送出 menu-action ocr");
             mainWindow.webContents.send('menu-action', 'ocr');
             mainWindow.setTitle("PDF小工具 - 報告改名");
           }
@@ -90,7 +89,6 @@ function createWindow() {
         {
           label: '蓋電子章',
           click: () => {
-            console.log("📨 送出 menu-action stamp");
             mainWindow.webContents.send('menu-action', 'stamp');
             mainWindow.setTitle("PDF小工具 - 蓋電子章");
           }
@@ -108,25 +106,13 @@ function createWindow() {
 }
 
 /* ======================
-   自動更新 log
+   自動更新必要事件
 ====================== */
-autoUpdater.on('checking-for-update', () => {
-  console.log('🔍 正在檢查更新...');
-});
-autoUpdater.on('update-available', (info) => {
-  console.log('⬇️ 有新版本可以更新:', info.version);
-});
-autoUpdater.on('update-not-available', () => {
-  console.log('✅ 已經是最新版');
-});
 autoUpdater.on('error', (err) => {
-  console.error('❌ 更新錯誤:', err);
-});
-autoUpdater.on('download-progress', (progressObj) => {
-  console.log(`📥 下載中... ${Math.floor(progressObj.percent)}%`);
+  log.error('❌ 更新錯誤:', err);
 });
 autoUpdater.on('update-downloaded', () => {
-  console.log('✅ 更新下載完成，將在關閉程式後安裝');
+  log.info('✅ 更新下載完成，將在關閉程式後安裝');
 });
 
 /* ======================

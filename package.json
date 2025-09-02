@@ -1,7 +1,7 @@
 {
   "name": "pdf_tools",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.3",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -21,6 +21,7 @@
     },
     "files": [
       "dist/web/**/*",
+      "backend/",
       "electron/**/*",
       "backend/**/*",
       "node_modules/**/*",
