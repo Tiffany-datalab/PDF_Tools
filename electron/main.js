@@ -9,6 +9,11 @@ import { spawn } from 'child_process';
 import { ipcMain, dialog } from "electron";
 import log from 'electron-log';
 
+// 強制指定 log 檔案路徑
+log.transports.file.level = 'info';
+log.transports.file.resolvePath = () =>
+  path.join(app.getPath('userData'), 'logs/main.log');
+
 // 設定 electron-log
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
@@ -26,11 +31,13 @@ let mainWindow = null;
 function startFlask() {
   const isDev = !app.isPackaged;
   const script = isDev
-    ? path.join(__dirname, '../backend/app.py')  // dev 模式
-    : path.join(process.resourcesPath, 'app', 'backend', 'app.py');  // dist 模式
-  const pyExe = process.platform === "win32" ? "py" : "python3";
-  const py = spawn(pyExe, [script]);
+  ? path.join(__dirname, '../backend/app.py')
+  : path.join(process.resourcesPath, 'app.asar.unpacked', 'backend', 'app.exe');
+
   log.info("🚀 Flask script path:", script);
+
+  const pyExe = process.platform === "win32" ? "python" : "python3";
+  const py = spawn(pyExe, [script]);
 
   py.stdout.on('data', (data) => {
     log.info(`[Flask] ${data}`);
@@ -38,6 +45,10 @@ function startFlask() {
 
   py.stderr.on('data', (data) => {
     log.error(`[Flask Error] ${data}`);
+  });
+
+  py.on('error', (err) => {
+    log.error("❌ 無法啟動 Flask，請確認 Python 是否安裝:", err);
   });
 
   py.on('close', (code) => {

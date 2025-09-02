@@ -6,6 +6,9 @@ import os
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # ✅ 開啟跨域
 
+# 取得目前檔案所在目錄（打包後仍正確）
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 @app.route("/ocr_rename", methods=["POST"])
 def ocr_rename():
     data = request.json
@@ -15,7 +18,7 @@ def ocr_rename():
     if not report_type or not folder:
         return jsonify({"error": "缺少參數"}), 400
 
-    script = os.path.join("backend", "ocr_engine", "ocr_rename.py")
+    script = os.path.join(BASE_DIR, "ocr_engine", "ocr_rename.py")
     result = subprocess.run(
         ["python", script, report_type, folder],
         capture_output=True,
@@ -24,7 +27,6 @@ def ocr_rename():
 
     output = result.stdout.strip()
 
-    # ⬇️ 防呆：如果沒有正確輸出，就直接回錯誤訊息
     if not output or "," not in output:
         return jsonify({
             "error": "Python 腳本沒有回傳有效結果",
@@ -52,7 +54,7 @@ def pdf_stamp():
     if not input_folder or not output_folder or not stamp_img:
         return jsonify({"error": "缺少參數"}), 400
 
-    script = os.path.join("backend", "ocr_engine", "pdf_stamp.py")
+    script = os.path.join(BASE_DIR, "ocr_engine", "pdf_stamp.py")
     result = subprocess.run(
         ["python", script, input_folder, output_folder, stamp_img],
         capture_output=True,
@@ -68,4 +70,3 @@ def pdf_stamp():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=False)
-
