@@ -7,6 +7,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { ipcMain, dialog } from "electron";
+import log from 'electron-log';
+
+// 設定 electron-log
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+
+// 額外：讓 log 同時輸出到 console
+log.transports.console.level = 'info';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,37 +75,59 @@ function createWindow() {
   });
 
   // ✅ 自訂選單
-const menu = Menu.buildFromTemplate([
-  {
-    label: '功能選單',
-    submenu: [
-      {
-        label: '報告改名',
-        click: () => {
-          console.log("📨 送出 menu-action ocr");
-          mainWindow.webContents.send('menu-action', 'ocr');
-          mainWindow.setTitle("PDF小工具 - 報告改名"); // ← 新增
-        }
-      },
-      {
-        label: '蓋電子章',
-        click: () => {
-          console.log("📨 送出 menu-action stamp");
-          mainWindow.webContents.send('menu-action', 'stamp');
-          mainWindow.setTitle("PDF小工具 - 蓋電子章"); // ← 新增
-        }
-      },
-    ]
-  },
-  {
-    label: '開發者工具',
-    click: () => {
-      mainWindow.webContents.toggleDevTools();
+  const menu = Menu.buildFromTemplate([
+    {
+      label: '功能選單',
+      submenu: [
+        {
+          label: '報告改名',
+          click: () => {
+            console.log("📨 送出 menu-action ocr");
+            mainWindow.webContents.send('menu-action', 'ocr');
+            mainWindow.setTitle("PDF小工具 - 報告改名");
+          }
+        },
+        {
+          label: '蓋電子章',
+          click: () => {
+            console.log("📨 送出 menu-action stamp");
+            mainWindow.webContents.send('menu-action', 'stamp');
+            mainWindow.setTitle("PDF小工具 - 蓋電子章");
+          }
+        },
+      ]
+    },
+    {
+      label: '開發者工具',
+      click: () => {
+        mainWindow.webContents.toggleDevTools();
+      }
     }
-  }
-]);
-Menu.setApplicationMenu(menu);
+  ]);
+  Menu.setApplicationMenu(menu);
 }
+
+/* ======================
+   自動更新 log
+====================== */
+autoUpdater.on('checking-for-update', () => {
+  console.log('🔍 正在檢查更新...');
+});
+autoUpdater.on('update-available', (info) => {
+  console.log('⬇️ 有新版本可以更新:', info.version);
+});
+autoUpdater.on('update-not-available', () => {
+  console.log('✅ 已經是最新版');
+});
+autoUpdater.on('error', (err) => {
+  console.error('❌ 更新錯誤:', err);
+});
+autoUpdater.on('download-progress', (progressObj) => {
+  console.log(`📥 下載中... ${Math.floor(progressObj.percent)}%`);
+});
+autoUpdater.on('update-downloaded', () => {
+  console.log('✅ 更新下載完成，將在關閉程式後安裝');
+});
 
 /* ======================
    單一實例鎖
@@ -107,14 +138,12 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    // 如果已經有視窗 → 聚焦
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
   });
 
-  // 只會在第一個實例進來時執行
   app.whenReady().then(() => {
     startFlask();
     createWindow();
