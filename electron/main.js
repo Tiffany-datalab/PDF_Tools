@@ -24,7 +24,10 @@ let mainWindow = null;
    啟動 Flask 後端
 ====================== */
 function startFlask() {
-  const script = path.join(process.resourcesPath, 'app', 'backend', 'app.py');
+  const isDev = !app.isPackaged;
+  const script = isDev
+    ? path.join(__dirname, '../backend/app.py')  // dev 模式
+    : path.join(process.resourcesPath, 'app', 'backend', 'app.py');  // dist 模式
   const pyExe = process.platform === "win32" ? "py" : "python3";
   const py = spawn(pyExe, [script]);
   log.info("🚀 Flask script path:", script);
