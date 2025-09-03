@@ -31,29 +31,22 @@ let mainWindow = null;
 function startFlask() {
   const isDev = !app.isPackaged;
   const script = isDev
-  ? path.join(__dirname, '../backend/app.py')
-  : path.join(process.resourcesPath, 'app.asar.unpacked', 'backend', 'app.exe');
+    ? path.join(__dirname, '../backend/app.py')
+    : path.join(process.resourcesPath, 'app.asar.unpacked', 'backend', 'app.exe');
 
   log.info("🚀 Flask script path:", script);
 
-  const pyExe = process.platform === "win32" ? "python" : "python3";
-  const py = spawn(pyExe, [script]);
+  let py;
+  if (isDev) {
+    py = spawn("python", [script]);   // dev 模式 → 用 Python 跑 app.py
+  } else {
+    py = spawn(script);               // dist 模式 → 直接跑 app.exe
+  }
 
-  py.stdout.on('data', (data) => {
-    log.info(`[Flask] ${data}`);
-  });
-
-  py.stderr.on('data', (data) => {
-    log.error(`[Flask Error] ${data}`);
-  });
-
-  py.on('error', (err) => {
-    log.error("❌ 無法啟動 Flask，請確認 Python 是否安裝:", err);
-  });
-
-  py.on('close', (code) => {
-    log.info(`[Flask] process exited with code ${code}`);
-  });
+  py.stdout.on('data', (data) => log.info(`[Flask] ${data}`));
+  py.stderr.on('data', (data) => log.error(`[Flask Error] ${data}`));
+  py.on('error', (err) => log.error("❌ 無法啟動 Flask:", err));
+  py.on('close', (code) => log.info(`[Flask] process exited with code ${code}`));
 }
 
 /* ======================
