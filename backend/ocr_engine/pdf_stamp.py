@@ -7,7 +7,7 @@ import sys
 # 固定設定
 STAMP_SIZE = 100
 X_OFFSET = 360
-Y_OFFSET = -25
+Y_OFFSET = -35
 PASSWORD = "HQTReport"
 
 def add_stamp(input_pdf, stamp_img, output_folder):
