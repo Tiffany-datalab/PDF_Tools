@@ -21,7 +21,7 @@ def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
             print(f"{input_pdf} 第 {page_num} 頁 -> (x0={x0}, y0={y0}, x1={x1}, y1={y1})", file=sys.stderr)
 
             new_x = x0 + X_OFFSET
-            new_y = y0 + y_offset
+            new_y = y0 + y_offset   # ✅ 用傳進來的參數
             rect = fitz.Rect(new_x, new_y, new_x + STAMP_SIZE, new_y + STAMP_SIZE)
             page.insert_image(rect, filename=stamp_img)
 
@@ -51,15 +51,14 @@ def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
     return True
 
 def main():
-    if len(sys.argv) < 4:
-        print("0,0")  # 沒有參數 → 成功 0，失敗 0
+    if len(sys.argv) < 5:  # ← 需要 5 個參數
+        print("0,0")  
         sys.exit(1)
 
     input_folder = sys.argv[1]
     output_folder = sys.argv[2]
     stamp_img = sys.argv[3]
-    # 第 4 個參數 → y_offset，沒有給就用 -25
-    y_offset = int(sys.argv[4]) if len(sys.argv) >= 5 else -25
+    y_offset = int(sys.argv[4])   # ✅ 讀進來的第四個參數
 
     pdf_files = [f for f in os.listdir(input_folder) if f.lower().endswith(".pdf")]
 
@@ -76,7 +75,6 @@ def main():
             print(f"處理 {pdf} 失敗：{e}", file=sys.stderr)
             fail += 1
 
-    # 最後統一輸出「成功數,失敗數」
     print(f"{success},{fail}")
 
 if __name__ == "__main__":
