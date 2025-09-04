@@ -2,9 +2,7 @@
 node_modules/
 out/
 dist/
-backend/ocr_engine/build/
-backend/ocr_rename
-backend/pdf_stamp
+build/
 
 # VS Code settings
 .vscode/
@@ -24,6 +22,7 @@ package-lock.json
 .DS_Store
 Thumbs.db
 *spec
+*.exe
 
 # Python OCR 打包
 ocr_engine/build/

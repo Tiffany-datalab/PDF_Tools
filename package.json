@@ -27,20 +27,8 @@
     ],
     "extraResources": [
       {
-        "from": "backend/ocr_rename",
-        "to": "backend/ocr_rename"
-      },
-      {
-        "from": "backend/pdf_stamp",
-        "to": "backend/pdf_stamp"
-      },
-      {
-        "from": "backend/tesseract",
-        "to": "backend/tesseract"
-      },
-      {
-        "from": "backend/poppler",
-        "to": "backend/poppler"
+        "from": "backend/ocr_engine",
+        "to": "backend/ocr_engine"
       }
     ],
     "win": {

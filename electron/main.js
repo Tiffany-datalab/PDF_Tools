@@ -120,7 +120,7 @@ function runPythonExe(baseName, args) {
   return new Promise((resolve, reject) => {
     // dev 模式 → 用 .py；打包後 → 用 .exe
     const exePath = app.isPackaged
-      ? path.join(process.resourcesPath, "backend", baseName, `${baseName}.exe`)
+      ? path.join(process.resourcesPath, "backend", "ocr_engine", `${baseName}.exe`)
       : path.join(__dirname, "../backend/ocr_engine", `${baseName}.py`);
 
     log.info(`執行: ${exePath} ${args.join(" ")}`);

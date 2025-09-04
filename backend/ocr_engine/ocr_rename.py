@@ -11,15 +11,16 @@ if getattr(sys, 'frozen', False):
     # exe 模式
     BASE_DIR = os.path.dirname(sys.executable)
 else:
-    # dev 模式 → 回到 backend
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    # dev 模式 → 固定到 backend/ocr_engine
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # === Tesseract 路徑 ===
-tesseract_path = os.path.join(os.path.dirname(BASE_DIR), "tesseract", "tesseract.exe")
+tesseract_path = os.path.join(BASE_DIR, "tesseract", "tesseract.exe")
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 # === Poppler 路徑 ===
-poppler_path = os.path.join(os.path.dirname(BASE_DIR), "poppler", "bin")
+poppler_path = os.path.join(BASE_DIR, "poppler", "bin")
+
 
 def normalize(s):
     s = s.upper()
