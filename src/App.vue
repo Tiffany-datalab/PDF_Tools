@@ -27,6 +27,11 @@
     <!-- 蓋電子章 -->
     <div v-if="mode === 'stamp'" class="form-box">
       <h2>蓋電子章</h2>
+      <div>
+        <label for="yOffset">Y 偏移值：</label>
+        <input id="yOffset" v-model.number="yOffset" type="number" placeholder="-25" class="y-input"/>
+        <label for="yOffset" class="hint-label">(負越多，圖越上面)</label>
+      </div>
       <div class="form-row">
         <label>原始報告資料夾：</label>
         <input v-model="inputFolder" type="text" />
@@ -135,6 +140,10 @@ async function runOcr() {
 }
 
 // Stamp 蓋章
+
+const yOffset = ref(-25)  // 預設 -25
+
+// Stamp 蓋章
 async function runStamp() {
   if (!inputFolder.value || !outputFolder.value || !stampImg.value) {
     alert("請先選擇完整的輸入、輸出、電子章路徑");
@@ -154,7 +163,8 @@ async function runStamp() {
       "pdf-stamp",
       inputFolder.value,
       outputFolder.value,
-      stampImg.value
+      stampImg.value,
+      yOffset.value    // ✅ 加上第四個參數
     );
 
     clearInterval(interval);
@@ -172,6 +182,7 @@ async function runStamp() {
     console.error(err);
   }
 }
+
 
 // 選擇資料夾
 async function chooseFolder(type) {
@@ -352,6 +363,21 @@ progress::-webkit-progress-bar {
   margin-top: 6px;       /* ✅ 和進度條之間距離 */
   font-weight: bold;     /* ✅ 粗體 */
   font-size: 20px;       /* 可依需要調大小 */
+}
+
+.y-input {
+  width: 35px;
+  height: 18px;
+  font-size: 14px;
+  padding: 2px 5px;
+  margin-bottom: 5px;   /* ✅ 這裡設定間距，原本是 5，可以改成 10 或更大 */
+  vertical-align: middle;
+}
+
+.hint-label {
+  margin-left: 8px;     /* 與輸入框分開 */
+  font-size: 12px;      /* 小字體 */
+  color: #666;          /* 灰色，當提示文字 */
 }
 
 </style>

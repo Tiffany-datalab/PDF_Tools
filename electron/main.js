@@ -156,8 +156,8 @@ ipcMain.handle("ocr-rename", async (event, reportType, folder) => {
 });
 
 // 蓋電子章
-ipcMain.handle("pdf-stamp", async (event, inputFolder, outputFolder, stampImg) => {
-  return runPythonExe("pdf_stamp", [inputFolder, outputFolder, stampImg]);
+ipcMain.handle("pdf-stamp", async (event, inputFolder, outputFolder, stampImg, yOffset) => {
+  return runPythonExe("pdf_stamp", [inputFolder, outputFolder, stampImg, String(yOffset)]);
 });
 
 /* ======================

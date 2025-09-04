@@ -7,10 +7,9 @@ import sys
 # 固定設定
 STAMP_SIZE = 100
 X_OFFSET = 360
-Y_OFFSET = -25
 PASSWORD = "HQTReport"
 
-def add_stamp(input_pdf, stamp_img, output_folder):
+def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
     doc = fitz.open(input_pdf)
     found_flag = False
 
@@ -22,7 +21,7 @@ def add_stamp(input_pdf, stamp_img, output_folder):
             print(f"{input_pdf} 第 {page_num} 頁 -> (x0={x0}, y0={y0}, x1={x1}, y1={y1})", file=sys.stderr)
 
             new_x = x0 + X_OFFSET
-            new_y = y0 + Y_OFFSET
+            new_y = y0 + y_offset
             rect = fitz.Rect(new_x, new_y, new_x + STAMP_SIZE, new_y + STAMP_SIZE)
             page.insert_image(rect, filename=stamp_img)
 
@@ -59,6 +58,8 @@ def main():
     input_folder = sys.argv[1]
     output_folder = sys.argv[2]
     stamp_img = sys.argv[3]
+    # 第 4 個參數 → y_offset，沒有給就用 -25
+    y_offset = int(sys.argv[4]) if len(sys.argv) >= 5 else -25
 
     pdf_files = [f for f in os.listdir(input_folder) if f.lower().endswith(".pdf")]
 
@@ -66,7 +67,7 @@ def main():
     for pdf in pdf_files:
         input_pdf = os.path.join(input_folder, pdf)
         try:
-            ok = add_stamp(input_pdf, stamp_img, output_folder)
+            ok = add_stamp(input_pdf, stamp_img, output_folder, y_offset)
             if ok:
                 success += 1
             else:
