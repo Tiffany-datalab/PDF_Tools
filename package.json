@@ -1,7 +1,7 @@
 {
   "name": "pdf_tools",
   "private": true,
-  "version": "1.0.6",
+  "version": "1.0.5",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -19,15 +19,29 @@
       "buildResources": "public",
       "output": "dist"
     },
+    "asar": true,
     "files": [
-      "dist/web/**/*",
-      "electron/**/*",
-      "backend/**/*",
-      "node_modules/**/*",
+      "dist/web/**",
+      "electron/**",
       "package.json"
     ],
-    "asarUnpack": [
-      "backend/**/*"
+    "extraResources": [
+      {
+        "from": "backend/ocr_rename",
+        "to": "backend/ocr_rename"
+      },
+      {
+        "from": "backend/pdf_stamp",
+        "to": "backend/pdf_stamp"
+      },
+      {
+        "from": "backend/tesseract",
+        "to": "backend/tesseract"
+      },
+      {
+        "from": "backend/poppler",
+        "to": "backend/poppler"
+      }
     ],
     "win": {
       "icon": "public/A.ico",

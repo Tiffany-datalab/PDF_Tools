@@ -2,7 +2,9 @@
 node_modules/
 out/
 dist/
-backend/build/
+backend/ocr_engine/build/
+backend/ocr_rename
+backend/pdf_stamp
 
 # VS Code settings
 .vscode/

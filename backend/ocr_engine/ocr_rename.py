@@ -2,15 +2,24 @@ APP_VERSION = "1.0.0"
 
 import os
 import re
-import json
 import sys
 from pdf2image import convert_from_path
 import pytesseract
 from PIL import Image, ImageOps
 
-# === ✅ 設定 Tesseract OCR 執行檔路徑 ===
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-pytesseract.pytesseract.tesseract_cmd = os.path.join(BASE_DIR, "tesseract", "tesseract.exe")
+if getattr(sys, 'frozen', False):
+    # exe 模式
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    # dev 模式 → 回到 backend
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# === Tesseract 路徑 ===
+tesseract_path = os.path.join(os.path.dirname(BASE_DIR), "tesseract", "tesseract.exe")
+pytesseract.pytesseract.tesseract_cmd = tesseract_path
+
+# === Poppler 路徑 ===
+poppler_path = os.path.join(os.path.dirname(BASE_DIR), "poppler", "bin")
 
 def normalize(s):
     s = s.upper()
@@ -71,7 +80,7 @@ def extract_report_id(pdf_path, report_type):
 
         return report_id
     except Exception as e:
-        print(f"❌ OCR 錯誤：{e}", file=sys.stderr)
+        print(f"OCR 錯誤：{e}", file=sys.stderr)
         return None
 
 def process_pdfs(source, report_type):

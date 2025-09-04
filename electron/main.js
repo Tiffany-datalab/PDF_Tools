@@ -9,11 +9,6 @@ import { spawn } from 'child_process';
 import { ipcMain, dialog } from "electron";
 import log from 'electron-log';
 
-// 強制指定 log 檔案路徑
-log.transports.file.level = 'info';
-log.transports.file.resolvePath = () =>
-  path.join(app.getPath('userData'), 'logs/main.log');
-
 // 設定 electron-log
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
@@ -24,30 +19,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow = null;
-
-/* ======================
-   啟動 Flask 後端
-====================== */
-function startFlask() {
-  const isDev = !app.isPackaged;
-  const script = isDev
-    ? path.join(__dirname, '../backend/app.py')
-    : path.join(process.resourcesPath, 'app.asar.unpacked', 'backend', 'app.exe');
-
-  log.info("🚀 Flask script path:", script);
-
-  let py;
-  if (isDev) {
-    py = spawn("python", [script]);   // dev 模式 → 用 Python 跑 app.py
-  } else {
-    py = spawn(script);               // dist 模式 → 直接跑 app.exe
-  }
-
-  py.stdout.on('data', (data) => log.info(`[Flask] ${data}`));
-  py.stderr.on('data', (data) => log.error(`[Flask Error] ${data}`));
-  py.on('error', (err) => log.error("❌ 無法啟動 Flask:", err));
-  py.on('close', (code) => log.info(`[Flask] process exited with code ${code}`));
-}
 
 /* ======================
    建立主視窗
@@ -116,10 +87,10 @@ function createWindow() {
    自動更新必要事件
 ====================== */
 autoUpdater.on('error', (err) => {
-  log.error('❌ 更新錯誤:', err);
+  log.error('更新錯誤:', err);
 });
 autoUpdater.on('update-downloaded', () => {
-  log.info('✅ 更新下載完成，將在關閉程式後安裝');
+  log.info('更新下載完成，將在關閉程式後安裝');
 });
 
 /* ======================
@@ -138,13 +109,59 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(() => {
-    startFlask();
     createWindow();
   });
 }
 
 /* ======================
-   IPC 事件
+   IPC 事件：OCR 改名 & 蓋章
+====================== */
+function runPythonExe(baseName, args) {
+  return new Promise((resolve, reject) => {
+    // dev 模式 → 用 .py；打包後 → 用 .exe
+    const exePath = app.isPackaged
+      ? path.join(process.resourcesPath, "backend", baseName, `${baseName}.exe`)
+      : path.join(__dirname, "../backend/ocr_engine", `${baseName}.py`);
+
+    log.info(`執行: ${exePath} ${args.join(" ")}`);
+
+    let output = "";
+    const command = app.isPackaged ? exePath : "py";   // ✅ dev 用 py，release 用 exe
+    const spawnArgs = app.isPackaged ? args : [exePath, ...args];
+
+    const py = spawn(command, spawnArgs);
+
+    py.stdout.on("data", (data) => {
+      output += data.toString();
+    });
+
+    py.stderr.on("data", (data) => {
+      log.error(data.toString());
+    });
+
+    py.on("close", () => {
+      try {
+        const [success, fail] = output.trim().split(",");
+        resolve({ success: parseInt(success), fail: parseInt(fail) });
+      } catch (err) {
+        reject(new Error(`解析失敗: ${output}`));
+      }
+    });
+  });
+}
+
+// OCR 改名
+ipcMain.handle("ocr-rename", async (event, reportType, folder) => {
+  return runPythonExe("ocr_rename", [reportType, folder]);
+});
+
+// 蓋電子章
+ipcMain.handle("pdf-stamp", async (event, inputFolder, outputFolder, stampImg) => {
+  return runPythonExe("pdf_stamp", [inputFolder, outputFolder, stampImg]);
+});
+
+/* ======================
+   IPC 事件：檔案 / 資料夾選擇
 ====================== */
 ipcMain.handle("select-folder", async () => {
   const result = await dialog.showOpenDialog({

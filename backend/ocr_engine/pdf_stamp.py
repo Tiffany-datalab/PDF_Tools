@@ -19,7 +19,7 @@ def add_stamp(input_pdf, stamp_img, output_folder):
         for inst in text_instances:
             found_flag = True
             x0, y0, x1, y1 = inst
-            print(f"📍 {input_pdf} 第 {page_num} 頁 -> (x0={x0}, y0={y0}, x1={x1}, y1={y1})", file=sys.stderr)
+            print(f"{input_pdf} 第 {page_num} 頁 -> (x0={x0}, y0={y0}, x1={x1}, y1={y1})", file=sys.stderr)
 
             new_x = x0 + X_OFFSET
             new_y = y0 + Y_OFFSET
@@ -27,7 +27,7 @@ def add_stamp(input_pdf, stamp_img, output_folder):
             page.insert_image(rect, filename=stamp_img)
 
     if not found_flag:
-        print(f"⚠️ {input_pdf} 沒有找到「報告簽署人」", file=sys.stderr)
+        print(f"{input_pdf} 沒有找到「報告簽署人」", file=sys.stderr)
 
     os.makedirs(output_folder, exist_ok=True)
     base_name = os.path.basename(input_pdf)
@@ -47,7 +47,7 @@ def add_stamp(input_pdf, stamp_img, output_folder):
     doc.close()
 
     os.remove(input_pdf)
-    print(f"✅ 已完成 {output_pdf}，並刪除原始 {input_pdf}", file=sys.stderr)
+    print(f"已完成 {output_pdf}，並刪除原始 {input_pdf}", file=sys.stderr)
 
     return True
 
@@ -72,7 +72,7 @@ def main():
             else:
                 fail += 1
         except Exception as e:
-            print(f"❌ 處理 {pdf} 失敗：{e}", file=sys.stderr)
+            print(f"處理 {pdf} 失敗：{e}", file=sys.stderr)
             fail += 1
 
     # 最後統一輸出「成功數,失敗數」

@@ -99,7 +99,7 @@ onMounted(() => {
 // OCR 改名
 async function runOcr() {
   if (!ocrFolder.value) {
-    alert("⚠️ 請先選擇 PDF 資料夾");
+    alert("請先選擇 PDF 資料夾");
     return;
   }
 
@@ -107,21 +107,16 @@ async function runOcr() {
   total.value = 100;
   isProcessing.value = true;
 
-  // 模擬進度 (每 200ms +5)
   const interval = setInterval(() => {
     if (progress.value < 95) progress.value += 5;
   }, 200);
 
   try {
-    const res = await fetch("http://127.0.0.1:5000/ocr_rename", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        report_type: reportType.value,
-        folder: ocrFolder.value,
-      }),
-    });
-    const data = await res.json();
+    const data = await window.electronAPI.invoke(
+      "ocr-rename",
+      reportType.value,
+      ocrFolder.value
+    );
 
     clearInterval(interval);
     progress.value = 100;
@@ -129,20 +124,20 @@ async function runOcr() {
       isProcessing.value = false;
     }, 500);
 
-    // ✅ 用 Modal 顯示結果
     result.value = { success: data.success || 0, fail: data.fail || 0 };
     showResult.value = true;
   } catch (err) {
     clearInterval(interval);
     isProcessing.value = false;
-    alert("❌ OCR API 連線失敗，請確認 Flask 是否有啟動");
+    alert("OCR 執行失敗，請確認程式內有 ocr_rename.exe");
+    console.error(err);
   }
 }
 
 // Stamp 蓋章
 async function runStamp() {
   if (!inputFolder.value || !outputFolder.value || !stampImg.value) {
-    alert("⚠️ 請先選擇完整的輸入、輸出、電子章路徑");
+    alert("請先選擇完整的輸入、輸出、電子章路徑");
     return;
   }
 
@@ -150,22 +145,17 @@ async function runStamp() {
   total.value = 100;
   isProcessing.value = true;
 
-  // 模擬進度 (每 200ms +5)
   const interval = setInterval(() => {
     if (progress.value < 95) progress.value += 5;
   }, 200);
 
   try {
-    const res = await fetch("http://127.0.0.1:5000/pdf_stamp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input_folder: inputFolder.value,
-        output_folder: outputFolder.value,
-        stamp_img: stampImg.value,
-      }),
-    });
-    const data = await res.json();
+    const data = await window.electronAPI.invoke(
+      "pdf-stamp",
+      inputFolder.value,
+      outputFolder.value,
+      stampImg.value
+    );
 
     clearInterval(interval);
     progress.value = 100;
@@ -173,24 +163,18 @@ async function runStamp() {
       isProcessing.value = false;
     }, 500);
 
-    // ✅ 用 Modal 顯示結果
     result.value = { success: data.success || 0, fail: data.fail || 0 };
     showResult.value = true;
   } catch (err) {
     clearInterval(interval);
     isProcessing.value = false;
-    alert("❌ 蓋電子章 API 連線失敗，請確認 Flask 是否有啟動");
+    alert("蓋章執行失敗，請確認程式內有 pdf_stamp.exe");
     console.error(err);
   }
 }
 
 // 選擇資料夾
 async function chooseFolder(type) {
-  if (!window.electronAPI || !window.electronAPI.selectFolder) {
-    alert("❌ electronAPI.selectFolder 沒有載入，請檢查 preload.js");
-    return;
-  }
-
   const folder = await window.electronAPI.selectFolder();
   if (!folder) return;
 
@@ -210,17 +194,11 @@ async function chooseFolder(type) {
 
 // 選擇檔案
 async function chooseFile() {
-  if (!window.electronAPI || !window.electronAPI.selectFile) {
-    alert("❌ electronAPI.selectFile 沒有載入，請檢查 preload.js");
-    return;
-  }
-
   const file = await window.electronAPI.selectFile();
   if (!file) return;
   stampImg.value = file;
   localStorage.setItem("stampImg", file);
 }
-
 </script>
 
 <style>
