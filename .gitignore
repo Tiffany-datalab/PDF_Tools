@@ -23,6 +23,7 @@ package-lock.json
 Thumbs.db
 *spec
 *.exe
+*.txt
 
 # Python OCR 打包
 ocr_engine/build/
