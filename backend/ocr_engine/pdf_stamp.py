@@ -30,7 +30,14 @@ def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
     stamp_doc = fitz.open(stamp_pdf)
 
     for page_num, page in enumerate(doc, start=1):
-        text_instances = page.search_for("報告簽署人")
+        # ✅ 同時搜尋「報告簽署人」與「Approval Signatory」
+        keywords = ["報告簽署人", "Approval Signatory"]
+        text_instances = []
+        for kw in keywords:
+            # 📍 可忽略大小寫搜尋（將文字轉成小寫再比對）
+            text_instances.extend(page.search_for(kw, quads=False))
+
+        # ✅ 若找到任一關鍵字，就進行蓋章
         for inst in text_instances:
             found_flag = True
             x0, y0, x1, y1 = inst
@@ -40,11 +47,12 @@ def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
             new_y = y0 + y_offset
             rect = fitz.Rect(new_x, new_y, new_x + STAMP_SIZE, new_y + STAMP_SIZE)
 
-            # 🔹 改為 show_pdf_page 疊加透明章
+            # 🔹 疊加透明章
             page.show_pdf_page(rect, stamp_doc, 0)
 
+    # ✅ 若兩者都沒找到，提示
     if not found_flag:
-        print(f"{input_pdf} 沒有找到「報告簽署人」", file=sys.stderr)
+        print(f"{input_pdf} 沒有找到「報告簽署人」或「Approval Signatory」", file=sys.stderr)
 
     os.makedirs(output_folder, exist_ok=True)
     base_name = os.path.basename(input_pdf)
@@ -66,11 +74,9 @@ def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
     stamp_doc.close()  # 🔸 關閉暫存章檔
     os.remove(stamp_pdf)  # 🔸 刪除章 PDF
 
-    # 建議測試時暫時保留原始 PDF，比較大小
-    # os.remove(input_pdf)
-
     print(f"已完成 {output_pdf}", file=sys.stderr)
     return True
+
 
 def main():
     if len(sys.argv) < 5:  # ← 需要 5 個參數
