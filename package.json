@@ -1,0 +1,59 @@
+{
+  "name": "pdf_tools",
+  "private": true,
+  "version": "1.1.0",
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:1420 && electron .\"",
+    "electron": "electron .",
+    "build": "vite build && electron-builder",
+    "dist": "vite build --outDir dist/web && electron-builder --publish always",
+    "preview": "vite preview"
+  },
+  "build": {
+    "appId": "com.tiffany_datalab.pdf_tools",
+    "productName": "PDF小工具",
+    "artifactName": "pdf_tools-setup-${version}.${ext}",
+    "directories": {
+      "buildResources": "public",
+      "output": "dist"
+    },
+    "asar": true,
+    "files": [
+      "dist/web/**",
+      "electron/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "backend/ocr_engine",
+        "to": "backend/ocr_engine"
+      }
+    ],
+    "win": {
+      "icon": "public/A.ico",
+      "target": "nsis"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Tiffany-datalab",
+        "repo": "PDF_Tools"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.6.2",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "concurrently": "^9.2.1",
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12",
+    "vite": "^6.0.3",
+    "wait-on": "^8.0.4"
+  }
+}
