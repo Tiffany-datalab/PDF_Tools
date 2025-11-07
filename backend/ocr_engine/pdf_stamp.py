@@ -75,7 +75,16 @@ def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
     os.remove(stamp_pdf)  # 🔸 刪除章 PDF
 
     print(f"已完成 {output_pdf}", file=sys.stderr)
+
+    # 🔹 儲存完成後刪除原始檔案（原資料夾就不留檔案）
+    try:
+        os.remove(input_pdf)
+        print(f"已刪除原始檔案：{input_pdf}", file=sys.stderr)
+    except Exception as e:
+        print(f"刪除原始檔案失敗：{input_pdf} -> {e}", file=sys.stderr)
+
     return True
+
 
 
 def main():
