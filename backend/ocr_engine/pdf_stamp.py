@@ -50,7 +50,7 @@ def add_stamp(input_pdf, stamp_img, output_folder, y_offset):
             # 🔹 疊加透明章
             page.show_pdf_page(rect, stamp_doc, 0)
 
-    # ✅ 若兩者都沒找到，提示1
+    # ✅ 若兩者都沒找到，提示
     if not found_flag:
         print(f"{input_pdf} 沒有找到「報告簽署人」或「Approval Signatory」", file=sys.stderr)
 
