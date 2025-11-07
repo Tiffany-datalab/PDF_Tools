@@ -22,7 +22,7 @@ package-lock.json
 .DS_Store
 Thumbs.db
 *spec
-*.exe
+# *.exe
 *.txt
 
 # Python OCR 打包
