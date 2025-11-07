@@ -1,4 +1,4 @@
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.2.0"
 
 import fitz  # PyMuPDF
 import os

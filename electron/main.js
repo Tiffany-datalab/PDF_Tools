@@ -90,6 +90,7 @@ autoUpdater.on('error', (err) => {
   log.error('更新錯誤:', err);
 });
 autoUpdater.on('update-downloaded', () => {
+  autoUpdater.quitAndInstall(true, true);
   log.info('更新下載完成，將在關閉程式後安裝');
 });
 
