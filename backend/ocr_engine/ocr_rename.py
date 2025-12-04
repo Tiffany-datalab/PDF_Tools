@@ -50,18 +50,21 @@ def extract_report_id(pdf_path, report_type):
         else:
             images = convert_from_path(pdf_path, dpi=300, first_page=1, last_page=1)
 
+        # 轉換為灰度圖 (L)
         full_img = images[0].convert("L")
 
+        # 根據報告類型進行裁剪，維持範圍以提高速度
         if report_type == "食品檢驗報告":
             cropped_img = full_img.crop((1200, 100, 3000, 700))
         else:
             cropped_img = full_img.crop((1500, 370, 2200, 470))
-
-        img = ImageOps.invert(cropped_img)
-        img = img.point(lambda x: 0 if x < 180 else 255, "1")
-        text = pytesseract.image_to_string(img, lang="chi_tra+eng")
+        
+        # 移除了 ImageOps.invert() 和 img.point() (二值化)
+        img = cropped_img 
+        text = pytesseract.image_to_string(img, lang="chi_tra+eng") # 對裁剪區域進行 OCR
 
         report_id = None
+        # 搜尋報告編號 (裁剪區域)
         match_food = re.search(r"(?:H|鬥)?\d{6}[-﹣]\d{3}[-﹣]\d{2}[-﹣][A-Z0-9]{2}", text.upper())
         match_env = re.search(r"MP\d{2}-[A-Z]-\d{4}", text.upper())
 
@@ -70,8 +73,9 @@ def extract_report_id(pdf_path, report_type):
         elif match_env:
             report_id = normalize(match_env.group(0))
 
+        # 備用方案：如果裁剪區域找不到，對整張灰度圖進行 OCR
         if not report_id:
-            text_full = pytesseract.image_to_string(full_img, lang="chi_tra+eng")
+            text_full = pytesseract.image_to_string(full_img, lang="chi_tra+eng") # 對整頁進行 OCR
             match_food = re.search(r"(?:H|鬥)?\d{6}[-﹣]\d{3}[-﹣]\d{2}[-﹣][A-Z0-9]{2}", text_full.upper())
             match_env = re.search(r"MP\d{2}-[A-Z]-\d{4}", text_full.upper())
             if match_food:
