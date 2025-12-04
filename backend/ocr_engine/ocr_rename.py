@@ -59,7 +59,6 @@ def extract_report_id(pdf_path, report_type):
         else:
             cropped_img = full_img.crop((1500, 370, 2200, 470))
         
-        # 移除了 ImageOps.invert() 和 img.point() (二值化)
         img = cropped_img 
         text = pytesseract.image_to_string(img, lang="chi_tra+eng") # 對裁剪區域進行 OCR
 
